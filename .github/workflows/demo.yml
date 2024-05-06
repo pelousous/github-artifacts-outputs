@@ -28,11 +28,18 @@ jobs:
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with: 
+          name: dist-files
           path:
             dist
   deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-files
+      - name: check contents
+        run: ls
       - name: Deploy
         run: echo "Deploying..."

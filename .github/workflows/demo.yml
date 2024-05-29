@@ -18,6 +18,8 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
+    outputs: 
+      script-file: ${{ steps.publish.outputs.script-file }}
     steps:
       - name: Get code
         uses: actions/checkout@v4
@@ -25,6 +27,9 @@ jobs:
         run: npm ci
       - name: Build website
         run: npm run build
+      - name: Publish js filename
+        id: publish
+        run: find dist/assets/*js -type f -execdir echo 'script-file={}' >> $GITHUB_OUTPUT ';'
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with: 
@@ -35,11 +40,13 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: download artifacts
-        uses: actions/download-artifact@v4
+      - name: get build artifacts
+        uses: actions/download-artifact@v4 # needed to download and use artifact on this machine (not awailable if not)
         with:
           name: dist-files
+      - name: output filename
+        run: ${{needs.build.outputs.script-file}}   
       - name: check contents
-        run: ls
+        run: ls 
       - name: Deploy
         run: echo "Deploying..."
